@@ -1,0 +1,34 @@
+version: "3.3"
+
+services:
+
+    nginx-proxy:
+        image: jwilder/nginx-proxy
+        ports:
+            - "80:80"
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+
+    api:
+        build:
+            context: .
+            dockerfile: TodoApi.Dockerfile
+        ports:
+            - "5000:5000"
+        environment: 
+            NETWORK_ACCESS: internal
+
+    web:
+        depends_on: 
+            - api
+            - nginx-proxy
+        build: 
+            context: .
+            dockerfile: Web.Dockerfile
+        ports:
+            - "5002:80"
+        expose: 
+            - "5002"
+        environment: 
+            VIRTUAL_HOST: my-app.local
+            VIRTUAL_PORT: 5002
